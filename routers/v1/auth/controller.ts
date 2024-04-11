@@ -1,23 +1,8 @@
-import { NextFunction, Request, Response } from "express";
-import { z } from "zod";
+import { Request, Response } from "express";
 import { Users } from "../../../models/user.js";
 import { comparePasswords, generateToken } from "./services.js";
-import { JWT_SECRET } from "../../../constants/index.js";
-import jwt from "jsonwebtoken";
-import {
-  AuthTokenPayload,
-  AuthenticatedRequest,
-} from "../../../types/index.js";
-
-const authSchema = z.object({
-  email: z.string().email().toLowerCase(),
-  password: z.string().min(6, "Password must contain minimun of 6 letters"),
-});
-
-const signUpSchema = authSchema.transform((arg) => ({
-  email: arg.email,
-  passwordhash: arg.password,
-}));
+import { AuthenticatedRequest } from "../../../types/index.js";
+import { authSchema, signUpSchema } from "./validators.js";
 
 export async function signupController(req: Request, res: Response) {
   try {
@@ -67,33 +52,5 @@ export async function profile(req: AuthenticatedRequest, res: Response) {
       errorMessage = error.message;
     }
     res.json({ error: errorMessage ?? JSON.stringify(error) }).status(500);
-  }
-}
-
-export async function authMiddleWare(
-  req: AuthenticatedRequest,
-  res: Response,
-  next: NextFunction
-) {
-  const token = req.headers?.authorization;
-  if (!token) {
-    return res
-      .status(401)
-      .json({ message: "Unauthorized - No token provided" });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
-    if (decoded) {
-      const user = await Users.findById(decoded?.userId, { passwordhash: 0 });
-      if (user) {
-        //@ts-ignore
-        req["user"] = user;
-        return next();
-      }
-    }
-    throw new Error();
-  } catch (error) {
-    return res.status(401).json({ message: "Unauthorized - Invalid token" });
   }
 }

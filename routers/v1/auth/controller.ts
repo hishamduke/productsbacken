@@ -1,14 +1,17 @@
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
-import { TUser, Users } from "../../../models/user.js";
+import { Users } from "../../../models/user.js";
 import { comparePasswords, generateToken } from "./services.js";
 import { JWT_SECRET } from "../../../constants/index.js";
 import jwt from "jsonwebtoken";
-import { AuthenticatedRequest } from "../../../types/index.js";
+import {
+  AuthTokenPayload,
+  AuthenticatedRequest,
+} from "../../../types/index.js";
 
 const authSchema = z.object({
   email: z.string().email().toLowerCase(),
-  password: z.string().min(6),
+  password: z.string().min(6, "Password must contain minimun of 6 letters"),
 });
 
 const signUpSchema = authSchema.transform((arg) => ({
@@ -23,7 +26,11 @@ export async function signupController(req: Request, res: Response) {
     const token = generateToken({ userId: user._id });
     return res.json({ token });
   } catch (error) {
-    res.json(error).status(500);
+    let errorMessage;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    res.json({ error: errorMessage ?? JSON.stringify(error) }).status(500);
   }
 }
 
@@ -55,12 +62,16 @@ export async function profile(req: AuthenticatedRequest, res: Response) {
   try {
     return res.json({ user: req.user });
   } catch (error) {
-    res.json(error).status(500);
+    let errorMessage;
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    res.json({ error: errorMessage ?? JSON.stringify(error) }).status(500);
   }
 }
 
 export async function authMiddleWare(
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) {
@@ -72,12 +83,14 @@ export async function authMiddleWare(
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, JWT_SECRET) as AuthTokenPayload;
     if (decoded) {
       const user = await Users.findById(decoded?.userId, { passwordhash: 0 });
-      //@ts-ignore
-      req["user"] = user;
-      return next();
+      if (user) {
+        //@ts-ignore
+        req["user"] = user;
+        return next();
+      }
     }
     throw new Error();
   } catch (error) {

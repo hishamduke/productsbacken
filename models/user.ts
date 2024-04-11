@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from "mongoose";
+import mongoose, { InferSchemaType, Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
 
 export const user = new Schema(
@@ -32,4 +32,6 @@ export async function getHash(password: string) {
 
 export const Users = model("users", user);
 
-export type TUser = InferSchemaType<typeof user> & { _id: string };
+export type TUser = InferSchemaType<typeof user> & {
+  _id: mongoose.Types.ObjectId;
+};

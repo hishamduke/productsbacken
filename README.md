@@ -1,18 +1,91 @@
-# Vue 3 + TypeScript + Vite
+# Backend for products API
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Project setup
 
-## Recommended IDE Setup
+- Clone this repo
+- Run `npm install`
+- Copy .env.example into .env
+- Fill in DB_URL for mongodb connection
+- Run `npm run dev` for dev server or `npm run start` for production server
+- The server should be ready at port 3001 or specied from environment variable
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## API end points
 
-## Type Support For `.vue` Imports in TS
+## Base url
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+/api/v1/
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+### Authentication
 
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+#### Signup
+
+POST request to `baseurl/auth/signup` with body including email,password
+returns token on successful registration or error othervise
+
+#### Login
+
+POST request to `baseurl/auth/login` with body including email,password
+returns token on successful login or error othervise
+
+#### Profile
+
+GET request to `baseurl/auth/me` with token in request header authorziation
+returns user details on success
+
+### PRODUCTS
+
+#### All products
+
+GET request to `baseurl/products` will return all products
+
+#### Featured products
+
+GET request to `baseurl/products/featured` will return all featured products
+
+#### Create new product
+
+POST request to `baseurl/products` with
+
+`{
+    title string,
+    description string,
+    price: number,
+    images: array of strings,
+    category: string,
+    isFeatured: boolean (optional)
+}`
+
+will create a new product and returns the product information
+
+#### Get single product
+
+GET request to `baseurl/products/:productId` will return the details of a single product
+(productId id mongodb \_id of product record)
+
+#### Update product
+
+PUT request to `baseurl/products/:productId` with  
+`{
+    title string(optional),
+    description string(optional),
+    price: number(optional),
+    images: array of strings(optional),
+    category: string(optional),
+    isFeatured: boolean (optional)
+}`
+will return the details of updated product
+(productId id mongodb \_id of product record)
+
+#### Delete product
+
+DELETE request to `baseurl/products/:productId` with  
+`{
+    title string(optional),
+    description string(optional),
+    price: number(optional),
+    images: array of strings(optional),
+    category: string(optional),
+    isFeatured: boolean (optional)
+}`
+will return the details of updated product
+(productId id mongodb \_id of product record)

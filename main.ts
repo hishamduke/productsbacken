@@ -4,6 +4,7 @@ import { initDB } from "./database/init.js";
 import bodyparser from "body-parser";
 import cors from "cors";
 import { apiRouter } from "./routers/index.js";
+import { PORT } from "./constants/index.js";
 
 const app = express();
 app.use(bodyparser.json());
@@ -19,7 +20,6 @@ initDB();
 
 app.use("/api", apiRouter);
 
-const PORT = process.env.PORT ?? 3001;
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
 });
